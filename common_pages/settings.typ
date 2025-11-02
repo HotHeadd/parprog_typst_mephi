@@ -3,7 +3,7 @@
 #let settings(doc)={
   set page(
     paper: "a4",
-    margin: (x: 1.8cm, y: 1.5cm),
+    margin: (x: 2cm, y: 1.5cm),
     numbering: "1",
   )
   set figure(
@@ -14,6 +14,12 @@
   set figure.caption(
     separator: [ \u{2013} ],
   )
+  show figure.caption: set text(
+    size: 12pt // размер шрифта в подписи
+  )
+  show figure.caption: set par(
+    leading: 0.7em // оступ между строками в подписи
+  )
   show figure.where(kind: "file"): set figure(
     supplement: "Файл"
   )
@@ -23,6 +29,10 @@
   show figure.where(kind: "table"): set figure.caption(
     position: top,
   )
+  show figure.where(kind: "table"): set align(
+    left
+  )
+  show figure.caption.where(kind: "table"): it => pad(left: 1.5em)[#it]
 
   set heading(
     numbering: "1.",
@@ -40,7 +50,7 @@
     leading: 1em, // между строками
     first-line-indent: (
       all: true,
-      amount: 1.25em
+      amount: 1.5em
     ),
     justify: true
   )
@@ -51,24 +61,52 @@
   doc
 }
 
-#let insert_code(code_path, code_caption)={
-  let source = read(code_path) // requires absolute path
-  figure(
-    align(left)[
-      #par(
+#let listing-counter = counter("listing")
+
+#let insert_code(code_path, code_caption) = {
+  let source = read(code_path)
+  block(
+    par(
         text(
-          size: 12pt,
-          raw(source, lang: "c")
-        ),
-        leading: 0.3em,
-        first-line-indent: (
-          amount: 0em
-        )
-      )
-    ],
-    caption: code_caption,
-    kind: "file"
+        size: 10pt,
+        raw(source, lang: "c"),
+      ),
+      leading: 0.5em,
+      first-line-indent: (amount: 0pt)
+    ),
+    stroke: none,
+    fill: luma(98%), // лёгкий фон
+    inset: 8pt,
+    radius: 4pt,
+    width: 100%,
   )
+  context listing-counter.step()
+  align(center)[
+    #text("Файл " + context listing-counter.display() + [ \u{2013} ] + code_caption, size: 12pt)
+  ]
+}
+
+#let insert_format_table(table_path, table_caption) = {
+  let source = read(table_path)
+  let lines = source.split("\n").filter(l => l != "")
+  let cols = int(lines.at(0))
+  let headers = lines.slice(1, cols + 1)
+  let x_axis = lines.at(cols+1)
+  let data = lines.slice(cols + 4)
+
+  let rows = data.map(l => l.split(regex("\s+")).filter(x => x != ""))
+
+  figure(
+    table(
+      columns: cols + 1,
+      align: center,
+      x_axis, ..headers,
+      ..rows.flatten()
+    ),
+    caption: table_caption,
+    kind: "table"
+  )
+
 }
 
 #let n_if(nodeName, x, y, lbl, w: 33mm, h: 20mm) = node(name: nodeName, (x*2, y*2), lbl, shape: diamond, width: w, height: h)
