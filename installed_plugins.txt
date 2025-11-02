@@ -1,0 +1,11 @@
+grayjack.monokai-grayjack
+mathematic.vscode-pdf
+ms-vscode-remote.remote-ssh
+ms-vscode-remote.remote-ssh-edit
+ms-vscode.cmake-tools
+ms-vscode.cpptools
+ms-vscode.cpptools-extension-pack
+ms-vscode.cpptools-themes
+ms-vscode.remote-explorer
+myriad-dreamin.tinymist
+wayou.vscode-todo-highlight
