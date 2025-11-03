@@ -124,7 +124,6 @@ def plot(series_names, x_label, y_label, approx_type, x_arr, y_arrs, out_path=No
             denom = np.sum(dx * dx)
 
             if denom == 0.0:
-                # fallback, если все X одинаковы
                 k = 0.0
             else:
                 k = np.sum(dx * dy) / denom

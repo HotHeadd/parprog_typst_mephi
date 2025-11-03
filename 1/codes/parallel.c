@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     fprintf(file_eff, "Реальная эффективность\n");
     fprintf(file_eff, "Ожидаемая эффективность\n");
     fprintf(file_eff, "Кол-во потоков\n");
-    fprintf(file_eff, "Ускорение\n");
+    fprintf(file_eff, "Эффективность\n");
     fprintf(file_eff, "none\n");
 
     int sz = 3*pow(10, 7);
