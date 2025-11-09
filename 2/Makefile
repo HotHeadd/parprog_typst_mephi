@@ -1,13 +1,13 @@
-CLANG = /opt/homebrew/opt/llvm/bin/clang
+CLANG = /opt/homebrew/opt/llvm/bin/clang++
 CLANG_FLAGS = -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -fopenmp
 
 OUTPUT_DIR = bin
-TARGET = codes/parallel.c
-BINS = $(patsubst codes/%.c,$(OUTPUT_DIR)/%,$(TARGET))
+TARGET = codes/parallel.cpp
+BINS = $(patsubst codes/%.cpp,$(OUTPUT_DIR)/%,$(TARGET))
 
 all: $(BINS) run_graphs
 
-$(OUTPUT_DIR)/%: codes/%.c
+$(OUTPUT_DIR)/%: codes/%.cpp
 	@mkdir -p $(OUTPUT_DIR)
 	$(CLANG) $< $(CLANG_FLAGS) -o $@
 

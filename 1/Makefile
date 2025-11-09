@@ -3,7 +3,8 @@ CLANG_FLAGS = -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib 
 
 OUTPUT_DIR = bin
 # TARGET = codes/sequential.c codes/parallel.c
-TARGET = codes/parallel.c
+# TARGET = codes/parallel.c
+TARGET = codes/sequential_extra.c
 BINS = $(patsubst codes/%.c,$(OUTPUT_DIR)/%,$(TARGET))
 
 all: $(BINS) run_graphs

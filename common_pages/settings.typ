@@ -111,19 +111,20 @@
 
 #let n_if(nodeName, x, y, lbl, w: 33mm, h: 20mm) = node(name: nodeName, (x*2, y*2), lbl, shape: diamond, width: w, height: h)
 #let n_io(nodeName, x, y, lbl) = node(name: nodeName, (x*2, y*2), lbl, shape:pill, width: 50mm, height: 20mm)
-#let n_common(nodeName, x, y, lbl) = node(name: nodeName, (x*2, y*2), lbl, width: 40mm, height: 20mm)
+#let n_common(nodeName, x, y, lbl, s: 14pt) = node(name: nodeName, (x*2, y*2), text(lbl, size: s), width: 40mm, height: 20mm)
 
 #let n_for_up(nodeName, x, y, varname, st_val, cond) = node(name: nodeName, (x*2, y*2), varname + " = " + str(st_val) + [;\ ] + varname + " " + cond + [;\ ++] + varname,  width: 40mm, height: 25mm, shape: hexagon)
 #let n_for_down(nodeName, x, y, varname, st_val, cond) = node(name: nodeName, (x*2, y*2), varname + " = " + str(st_val) + [;\ ] + varname + " " + cond + [;\ \-\-] + varname,  width: 40mm, height: 25mm, shape: hexagon)
+#let n_for_custom(nodeName, x, y, custom, s: 14pt) = node(name: nodeName, (x*2, y*2), text(custom, size: s),  width: 40mm, height: 25mm, shape: hexagon)
 
 #let n_code(nodeName, x, y, lbl) = {
   node(name: nodeName, (x*2, y*2), width: 40mm, height: 20mm)
   node((x*2, y*2), lbl, width: 35mm, height: 20mm)
 }
 
-#let edge_if_y(ifname, ifpath) = edge(ifname, ifpath, label: "ДА", label-pos: 10%, label-sep: 0pt)
-#let edge_if_n(ifname, ifpath) = edge(ifname, ifpath, label: "НЕТ", label-pos: 10%, label-sep: 0pt)
 #let arrow = "-|>"
+#let edge_if_y(ifname, ifpath) = edge(ifname, ifpath, label: "ДА", label-pos: 10%, label-sep: 0pt)
+#let edge_if_n(ifname, ifpath, p: 10%) = edge(ifname, ifpath, label: "НЕТ", label-pos: p, label-sep: 0pt, arrow)
 
 #let diagram-defaults = (
   cell-size: 10pt,
