@@ -1,5 +1,7 @@
-CLANG = /opt/homebrew/opt/llvm/bin/clang++
-CLANG_FLAGS = -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -fopenmp -std=c++20
+# CLANG = /opt/homebrew/opt/llvm/bin/clang++
+CLANG = clang++
+# CLANG_FLAGS = -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -fopenmp -std=c++20
+CLANG_FLAGS = -fopenmp -std=c++20 -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13 -L/usr/lib/x86_64-linux-gnu -O3 -march=native -ffast-math
 
 OUTPUT_DIR = bin
 TARGET = codes/main.cpp

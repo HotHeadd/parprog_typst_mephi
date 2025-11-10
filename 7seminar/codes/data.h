@@ -10,11 +10,12 @@ std::vector<std::pair<int, int>> threadsAndBlockSize = {
     {1, 1},
     {4, 2},
     {9, 3},
-    {16, 4}
+    {16, 4},
+    {25, 5}
 };
 
-int threads = 8;
-int repeats = 1;
+int threads = 32;
+int repeats = 20;
 
 struct TGraphDataSq {
     size_t rows;
@@ -94,7 +95,7 @@ struct TGraphDataRec {
 std::vector<TGraphDataSq> allSizesSq;
 std::vector<TGraphDataRec> allRecVec;
 void init_vectors() {
-    allSizesSq.emplace_back(36, 36, "results/sq1_small");
+    allSizesSq.emplace_back(60, 60, "results/sq1_small");
     allSizesSq.emplace_back(480, 480, "results/sq2_middle");
     allSizesSq.emplace_back(1020, 1020, "results/sq3_large");
     allSizesSq.emplace_back(2040 , 2040, "results/sq4_mega");
@@ -116,9 +117,9 @@ TGraphDataSq randomSq     = {1020, 1020, "results/sq8_bigrandom"};
 
 TGraphDataRec sparseRec = {
     {
-        {512, 2048},
-        {2048, 512},
-        {1024, 1024}
+        {64, 1024},
+        {1024, 64},
+        {512, 512}
     },
     "results/rec3_sparse"
 };

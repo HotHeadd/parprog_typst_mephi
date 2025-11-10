@@ -71,7 +71,78 @@ void TestForRect(TGraphDataRec& recData, std::vector<Dataset>& data) {
     }
 }
 
+void sequential_exp() {
+    std::vector<int> seq_sizes = {
+        32, 142, 252, 363, 473,
+        584, 694, 804, 914, 1024
+    };
+
+    std::ofstream file("results/seq_res");
+
+    file << "1\n" << "Последовательная реализация\n" << "Кол-во строк в кв. матр.\n" << "Время выполнения, мс\n" << "none\n";
+
+    double T1;
+    double start, end;
+    for (int size : seq_sizes) {
+        Matrix a = GenerateRandom(size, size);
+        Matrix b = GenerateRandom(size, size);
+        Matrix c(size, size);
+
+        double sum_time = 0;
+        for (int i=0; i < repeats; ++i) {
+            c.fill(0.0);
+            start = omp_get_wtime();
+            mul_matrix_seq(&a, &b, &c);
+            end = omp_get_wtime();
+            sum_time += end - start;
+        }
+        sum_time /= repeats;
+        sum_time *= 1000;
+        file << size << " " << sum_time << "\n";
+    }
+}
+
+void multithread_base_exp() {
+    size_t size = 1024;
+    std::ofstream file("results/mtt_res");
+    std::ofstream file_speed("results/mtt_speed");
+    std::ofstream file_eff("results/mtt_eff");
+
+    file << "1\n" << "Параллельная реализация\n" << "Кол-во потоков\n" << "Время выполнения, мс\n" << "none\n";
+    file_speed << "1\n" << "Параллельная реализация\n" << "Кол-во потоков\n" << "Ускорение\n" << "none\n";
+    file_eff << "1\n" << "Параллельная реализация\n" << "Кол-во потоков\n" << "Эффективность\n" << "none\n";
+
+    Matrix a = GenerateRandom(size, size);
+    Matrix b = GenerateRandom(size, size);
+    Matrix c(size, size);
+
+    double T1;
+    double start, end;
+    for (int t=1; t <= threads; ++t) {
+        double sum_time = 0;
+        for (int i=0; i < repeats; ++i) {
+            c.fill(0.0);
+            start = omp_get_wtime();
+            mul_matrix(&a, &b, &c, t);
+            end = omp_get_wtime();
+            sum_time += end - start;
+        }
+        sum_time /= repeats;
+        sum_time *= 1000;
+        if (t == 1) {
+            T1 = sum_time;
+        }
+        file << t << " " << sum_time << "\n";
+        file_speed << t << " " << T1 / sum_time << "\n";
+        file_eff << t << " " << T1/sum_time/t << "\n";
+    }
+}
+
 int main() {
+    sequential_exp();
+    std::cout << "finished seq " << std::endl;
+    multithread_base_exp();
+    std::cout << "finished mtt" << std::endl;
     init_vectors();
     for (auto& squareData: allSizesSq) {
         Matrix a = GenerateRandom(squareData.rows, squareData.cols);
@@ -101,7 +172,7 @@ int main() {
         Matrix c(sparseLowSq.rows, sparseLowSq.cols);
         TestForSquare(sparseLowSq, a, b, c);
     }
-    std::cout << "finished sparce low" << std::endl;
+    std::cout << "finished sparse low" << std::endl;
     {// bigRandı
         Matrix a = GenerateRandom(randomSq.rows, randomSq.cols, -10000000.0, 10000000.0);
         Matrix b = GenerateRandom(randomSq.rows, randomSq.cols, -10000000.0, 10000000.0);
