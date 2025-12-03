@@ -1,3 +1,5 @@
+#include <iostream>
+
 void shell_sort_parallel(int *array, int size, int threads, double delim = 2.0) {
     for (int s = size / delim; s > 0; s /= delim) {
         #pragma omp parallel for num_threads(threads) shared(array, size, s) default(none)

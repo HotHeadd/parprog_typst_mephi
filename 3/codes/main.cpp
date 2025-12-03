@@ -33,6 +33,7 @@ void prepareData(
     static TMyGenerator gen(elems);
     TSeries seriesRandom, seriesFully, seriesPartial, seriesLocally;
     for (int i = 0; i < arrays; ++i) {
+        std::cout << i << std::endl;
         seriesRandom.push_back(std::move(gen.GenRandom(random_coef)));
         if (is_reverse.has_value()) {
             seriesFully.push_back(std::move(gen.GenPartiallySorted(1, is_reverse.value())));
@@ -101,110 +102,120 @@ void test_delim_graph()
 {
     TData& data = randomData;
 
-    const int fixed_threads = threads;
-
-    std::ofstream file("results/delim_graph");
-    file << "delim\n";
-    file << "Время выполнения\n";
-    file << "none\n";
-
     static std::unique_ptr<int32_t[]> copy = std::make_unique<int32_t[]>(elems);
-
-    double delim = 1.0;
     const double eps = 1e-9;
 
-    while (delim <= 3.0 + eps) {
-        double sum = 0;
+    struct GraphFile {
+        std::string filename;
+        int threads;
+    };
 
-        for (const auto& series : data) {
-            for (const auto& array : series) {
-                std::copy(array.get(), array.get() + elems, copy.get());
-                double s = omp_get_wtime();
-                shell_sort_parallel(copy.get(), elems, fixed_threads, delim);
-                double e = omp_get_wtime();
-                sum += e - s;
+    std::vector<GraphFile> files = {
+        {"results/delim_graph_1thread", 1},
+        {"results/delim_graph_8threads", 8}
+    };
+
+    for (const auto& gf : files) {
+        std::ofstream file(gf.filename);
+        file << "1\n";
+        file << "Время выполнения для разынх delim\n";
+        file << "delim*10\n";
+        file << "Время выполнения, мс\n";
+        file << "none\n";
+
+        double delim = 1.1;
+        while (delim <= 3.0 + eps) {
+            double sum = 0;
+
+            for (const auto& series : data) {
+                for (const auto& array : series) {
+                    std::copy(array.get(), array.get() + elems, copy.get());
+                    double s = omp_get_wtime();
+                    shell_sort_parallel(copy.get(), elems, gf.threads, delim);
+                    double e = omp_get_wtime();
+                    sum += e - s;
+                }
             }
+
+            sum /= arrays;
+            sum *= 1000; // ms
+
+            file << delim*10 << " " << sum << "\n";
+            std::cout << "Finished delim=" << delim << " threads=" << gf.threads << " time=" << sum << "ms\n";
+
+            delim += 0.1;
+            delim = std::round(delim * 10.0) / 10.0;
         }
-
-        sum /= arrays;
-        sum *= 1000; // ms
-
-        file << delim << " " << sum << "\n";
-
-        std::cout << "Finished delim=" << delim << " time=" << sum << "ms\n";
-
-        delim += 0.1;
-        delim = std::round(delim * 10.0) / 10.0;
     }
-
 }
 
+
 int main() {
-    // std::cout << "preparing data" << std::endl;
-    // prepareData(1, false, 0.25, 10);
-    // prepareData(0.1, true, 0.50, 1000);
-    // prepareData(0.01, std::nullopt, 0.75, 100000);
+    std::cout << "preparing data" << std::endl;
+    prepareData(1, false, 0.25, 10);
+    prepareData(0.1, true, 0.50, 1000);
+    prepareData(0.01, std::nullopt, 0.75, 100000);
 
-    // std::cout << "calculating" << std::endl;
-    // TResults resultsRandom = process(randomData);
-    // TResults resultsFullySorted = process(fullySortedData);
-    // TResults resultsPartiallySorted = process(partiallySortedData);
-    // TResults resultsLocallySorted = process(locallySortedData);
+    std::cout << "calculating" << std::endl;
+    TResults resultsRandom = process(randomData);
+    TResults resultsFullySorted = process(fullySortedData);
+    TResults resultsPartiallySorted = process(partiallySortedData);
+    TResults resultsLocallySorted = process(locallySortedData);
 
-    // std::ofstream fileRand("results/random");
-    // std::ofstream fileRandSpeed("results/rand_speed");
-    // std::ofstream fileRandEff("results/rand_eff");
+    std::ofstream fileRand("results/random");
+    std::ofstream fileRandSpeed("results/rand_speed");
+    std::ofstream fileRandEff("results/rand_eff");
 
-    // std::ofstream fileFully("results/fully");
-    // std::ofstream filePartial("results/part");
-    // std::ofstream fileLocal("results/local");
+    std::ofstream fileFully("results/fully");
+    std::ofstream filePartial("results/part");
+    std::ofstream fileLocal("results/local");
 
-    // std::ofstream fileTogether("results/together");
-    // std::ofstream fileTogetherSpeed("results/together_speed");
-    // std::ofstream fileTogetherEff("results/together_eff");
-    // prepare_headers(fileRand, fileRandSpeed, fileRandEff, fileFully, filePartial, fileLocal, fileTogether, fileTogetherSpeed, fileTogetherEff);
-    // for (int t = 0; t < threads; ++t) {
-    //     fileRand << t + 1 << " ";
-    //     fileRandSpeed << t + 1 << " ";
-    //     fileRandEff << t + 1 << " ";
-    //     fileFully << t + 1 << " ";
-    //     filePartial << t + 1 << " ";
-    //     fileLocal << t + 1 << " ";
-    //     fileTogether << t + 1 << " ";
-    //     fileTogetherSpeed << t + 1 << " ";
-    //     fileTogetherEff << t + 1 << " ";
+    std::ofstream fileTogether("results/together");
+    std::ofstream fileTogetherSpeed("results/together_speed");
+    std::ofstream fileTogetherEff("results/together_eff");
+    prepare_headers(fileRand, fileRandSpeed, fileRandEff, fileFully, filePartial, fileLocal, fileTogether, fileTogetherSpeed, fileTogetherEff);
+    for (int t = 0; t < threads; ++t) {
+        fileRand << t + 1 << " ";
+        fileRandSpeed << t + 1 << " ";
+        fileRandEff << t + 1 << " ";
+        fileFully << t + 1 << " ";
+        filePartial << t + 1 << " ";
+        fileLocal << t + 1 << " ";
+        fileTogether << t + 1 << " ";
+        fileTogetherSpeed << t + 1 << " ";
+        fileTogetherEff << t + 1 << " ";
 
-    //     for (const auto& arr : resultsRandom) {
-    //         fileRand << arr[t] << " ";
-    //         fileRandSpeed << arr[0] / arr[t] << " ";
-    //         fileRandEff << arr[0] / arr[t] / (t + 1) << " ";
-    //     }
-    //     fileRand << "\n";
-    //     fileRandSpeed << "\n";
-    //     fileRandEff << "\n";
+        for (const auto& arr : resultsRandom) {
+            fileRand << arr[t] << " ";
+            fileRandSpeed << arr[0] / arr[t] << " ";
+            fileRandEff << arr[0] / arr[t] / (t + 1) << " ";
+        }
+        fileRand << "\n";
+        fileRandSpeed << "\n";
+        fileRandEff << "\n";
 
-    //     for (const auto& arr : resultsFullySorted) {
-    //         fileFully << arr[t] << " ";
-    //     }
-    //     fileFully << "\n";
-    //     for (const auto& arr : resultsPartiallySorted) {
-    //         filePartial << arr[t] << " ";
-    //     }
-    //     filePartial << "\n";
-    //     for (const auto& arr : resultsLocallySorted) {
-    //         fileLocal << arr[t] << " ";
-    //     }
-    //     fileLocal << "\n";
+        for (const auto& arr : resultsFullySorted) {
+            fileFully << arr[t] << " ";
+        }
+        fileFully << "\n";
+        for (const auto& arr : resultsPartiallySorted) {
+            filePartial << arr[t] << " ";
+        }
+        filePartial << "\n";
+        for (const auto& arr : resultsLocallySorted) {
+            fileLocal << arr[t] << " ";
+        }
+        fileLocal << "\n";
 
-    //     fileTogether << resultsFullySorted[1][t] << " " << resultsPartiallySorted[1][t] << " " << resultsLocallySorted[1][t] << "\n";
-    //     fileTogetherSpeed << resultsFullySorted[1][0] / resultsFullySorted[1][t]
-    //           << " " << resultsPartiallySorted[1][0] / resultsPartiallySorted[1][t]
-    //           << " " << resultsLocallySorted[1][0] / resultsLocallySorted[1][t] << "\n";
-    //     fileTogetherEff << resultsFullySorted[1][0] / resultsFullySorted[1][t] / (t + 1)
-    //           << " " << resultsPartiallySorted[1][0] / resultsPartiallySorted[1][t] / (t + 1)
-    //           << " " << resultsLocallySorted[1][0] / resultsLocallySorted[1][t] / (t + 1)
-    //           << "\n";
-    // }
+        fileTogether << resultsFullySorted[1][t] << " " << resultsPartiallySorted[1][t] << " " << resultsLocallySorted[1][t] << "\n";
+        fileTogetherSpeed << resultsFullySorted[1][0] / resultsFullySorted[1][t]
+              << " " << resultsPartiallySorted[1][0] / resultsPartiallySorted[1][t]
+              << " " << resultsLocallySorted[1][0] / resultsLocallySorted[1][t] << "\n";
+        fileTogetherEff << resultsFullySorted[1][0] / resultsFullySorted[1][t] / (t + 1)
+              << " " << resultsPartiallySorted[1][0] / resultsPartiallySorted[1][t] / (t + 1)
+              << " " << resultsLocallySorted[1][0] / resultsLocallySorted[1][t] / (t + 1)
+              << "\n";
+    }
 
     test_delim_graph();
 }
