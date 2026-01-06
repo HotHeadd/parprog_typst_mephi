@@ -2,7 +2,7 @@ CLANG = /opt/homebrew/opt/llvm/bin/clang++
 CLANG_FLAGS = -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -fopenmp -std=c++20
 
 OUTPUT_DIR = bin
-TARGET = codes/out_pars.cpp
+TARGET = codes/main.cpp
 BINS = $(patsubst codes/%.cpp,$(OUTPUT_DIR)/%,$(TARGET))
 
 RESULTS = $(wildcard results/*)

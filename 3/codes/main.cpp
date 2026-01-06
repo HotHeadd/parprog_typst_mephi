@@ -15,8 +15,8 @@ using TData = std::vector<std::vector<std::unique_ptr<int32_t[]>>>;
 using TSeries = std::vector<std::unique_ptr<int32_t[]>>;
 
 int32_t elems = pow(10, 6);
-int32_t arrays = 100;
-int threads = 12;
+int32_t arrays = 20;
+int threads = 8;
 
 TData   randomData, // full, 1%
         fullySortedData, // sorted, reverted
@@ -84,16 +84,16 @@ void prepare_headers(
     std::ofstream& fileTogetherSpeed,
     std::ofstream& fileTogetherEff
 ) {
-    fileRand << "3\n" << "100%\n" << "10%\n" << "1%\n" << "Кол-во потоков\n" << "Время выполнения\n" << "none\n";
+    fileRand << "3\n" << "100%\n" << "10%\n" << "1%\n" << "Кол-во потоков\n" << "Время выполнения, мс\n" << "none\n";
     fileRandSpeed << "3\n" << "100%\n" << "10%\n" << "1%\n" << "Кол-во потоков\n" << "Ускорение\n" << "none\n";
     fileRandEff << "3\n" << "100%\n" << "10%\n" << "1%\n" << "Кол-во потоков\n" << "Эффективность\n" << "none\n";
 
 
-    fileFully << "2\n" << "sorted\n" << "reversed\n" << "Кол-во потоков\n" << "Время выполнения\n" << "none\n";
-    filePartial << "3\n" << "25%\n" << "50%\n" << "75%\n" << "Кол-во потоков\n" << "Время выполнения\n" << "none\n";
-    fileLocal << "3\n" << "10\n" << "1000\n" << "100000\n" << "Кол-во потоков\n" << "Время выполнения\n" << "none\n";
+    fileFully << "2\n" << "sorted\n" << "reversed\n" << "Кол-во потоков\n" << "Время выполнения, мс\n" << "none\n";
+    filePartial << "3\n" << "25%\n" << "50%\n" << "75%\n" << "Кол-во потоков\n" << "Время выполнения, мс\n" << "none\n";
+    fileLocal << "3\n" << "10\n" << "1000\n" << "100000\n" << "Кол-во потоков\n" << "Время выполнения, мс\n" << "none\n";
 
-    fileTogether << "3\n" << "Сорт. в обратном порядке\n" << "Частично отсортированные (50%)\n" << "Локально отсортированные (1000)\n" << "Кол-во потоков\n" << "Время выполнения\n" << "none\n";
+    fileTogether << "3\n" << "Сорт. в обратном порядке\n" << "Частично отсортированные (50%)\n" << "Локально отсортированные (1000)\n" << "Кол-во потоков\n" << "Время выполнения, мс\n" << "none\n";
     fileTogetherSpeed << "3\n" << "Сорт. в обратном порядке\n" << "Частично отсортированные (50%)\n" << "Локально отсортированные (1000)\n" << "Кол-во потоков\n" << "Ускорение\n" << "none\n";
     fileTogetherEff << "3\n" << "Сорт. в обратном порядке\n" << "Частично отсортированные (50%)\n" << "Локально отсортированные (1000)\n" << "Кол-во потоков\n" << "Эффективность\n" << "none\n";
 }
@@ -162,9 +162,9 @@ int main() {
     TResults resultsPartiallySorted = process(partiallySortedData);
     TResults resultsLocallySorted = process(locallySortedData);
 
-    std::ofstream fileRand("results/random");
-    std::ofstream fileRandSpeed("results/rand_speed");
-    std::ofstream fileRandEff("results/rand_eff");
+    std::ofstream fileRand("results/random_512");
+    std::ofstream fileRandSpeed("results/rand_speed_512");
+    std::ofstream fileRandEff("results/rand_eff_512");
 
     std::ofstream fileFully("results/fully");
     std::ofstream filePartial("results/part");
@@ -217,5 +217,5 @@ int main() {
               << "\n";
     }
 
-    test_delim_graph();
+    // test_delim_graph();
 }

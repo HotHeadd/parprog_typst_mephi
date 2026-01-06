@@ -3,22 +3,24 @@ CLANG_FLAGS = -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib 
 
 OUTPUT_DIR = bin
 # TARGET = codes/sequential.c codes/parallel.c
-# TARGET = codes/parallel.c
-TARGET = codes/sequential_extra.c
+TARGET = codes/parallel.c
+# TARGET = codes/sequential_extra.c
 BINS = $(patsubst codes/%.c,$(OUTPUT_DIR)/%,$(TARGET))
 
-all: $(BINS) run_graphs
+all: $(BINS) run graphs
 
 $(OUTPUT_DIR)/%: codes/%.c
 	@mkdir -p $(OUTPUT_DIR)
 	$(CLANG) $< $(CLANG_FLAGS) -o $@
 
-run_graphs: $(BINS)
+run: $(BINS)
 	@echo "=== Запуск всех бинарников ==="
 	for bin in $(BINS); do \
 		echo "Запуск $$bin..."; \
 		./$$bin; \
 	done
+
+graphs:
 	@echo "=== Построение графиков ==="
 	for f in $(wildcard results/*); do \
 		name=$$(basename $$f); \
@@ -29,7 +31,7 @@ run_graphs: $(BINS)
 clean:
 	rm -rf $(OUTPUT_DIR)
 
-.PHONY: init
+.PHONY: all run graphs clean init
 
 init:
 	mkdir -p bin

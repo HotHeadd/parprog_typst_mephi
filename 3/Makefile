@@ -9,7 +9,7 @@ RESULTS = $(wildcard results/*)
 GRAPHS = $(patsubst results/%,graphs/%.png,$(RESULTS))
 
 # Основная цель: всё сразу
-all: run graphs
+all: clean run graphs
 
 # Компиляция
 $(OUTPUT_DIR)/%: codes/%.cpp

@@ -148,9 +148,121 @@ def plot(series_names, x_label, y_label, approx_type, x_arr, y_arrs, out_path=No
     ax.grid(which="major", linestyle="-", color="0.6", linewidth=0.7, alpha=0.6)
     ax.grid(which="minor", linestyle="-", color="0.85", linewidth=0.5, alpha=0.7)
 
+    # Легенда
     handles, labels = ax.get_legend_handles_labels()
     ncol = min(len(labels), 4) if labels else 1
     ax.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=ncol, frameon=False)
+
+        # ---- Выбрать угол, максимально удалённый от данных (с учётом реального bbox текста) ----
+    bench_text = (
+        "Apple M3 | 8/8 | 24GB\n"
+        "macOS 15.6 | clang 16\n"
+        "OpenMP 4.0 | N = 30 млн. | 100 repeats"
+    )
+
+    # отступ от краёв области графика (axes fraction)
+    margin = 0.07
+
+    corners = [
+        (margin, 1 - margin, "left",  "top"),     # UL
+        (1 - margin, 1 - margin, "right", "top"), # UR
+        (margin, margin, "left",  "bottom"),      # LL
+        (1 - margin, margin, "right", "bottom"),  # LR
+    ]
+
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+
+    # диапазоны данных для нормализации
+    x_min, x_max = float(np.min(x_arr)), float(np.max(x_arr))
+    all_y = np.hstack(y_arrs) if len(y_arrs) > 0 else np.array([0.0])
+    y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
+    dx = x_max - x_min or 1.0
+    dy = y_max - y_min or 1.0
+
+    def bbox_data_coords_for_text(fx, fy, ha, va):
+        """Вернуть bbox текста в координатах данных (x_lo,x_hi,y_lo,y_hi)."""
+        txt = ax.text(
+            fx, fy, bench_text,
+            transform=ax.transAxes,
+            ha=ha, va=va,
+            fontsize=9,
+            linespacing=1.25,
+            alpha=0.0  # невидимый при измерении
+        )
+        fig.canvas.draw()
+        bbox_disp = txt.get_window_extent(renderer)
+        txt.remove()  # убираем временный объект
+
+        inv = ax.transData.inverted()
+        x0, y0 = inv.transform((bbox_disp.x0, bbox_disp.y0))
+        x1, y1 = inv.transform((bbox_disp.x1, bbox_disp.y1))
+        x_lo, x_hi = sorted((x0, x1))
+        y_lo, y_hi = sorted((y0, y1))
+        return x_lo, x_hi, y_lo, y_hi
+
+    def point_rect_distance(px, py, x_lo, x_hi, y_lo, y_hi):
+        """Евклид. расстояние точки до прямоугольника в data coords, затем нормализовано."""
+        dx_out = 0.0
+        if px < x_lo:
+            dx_out = x_lo - px
+        elif px > x_hi:
+            dx_out = px - x_hi
+        dy_out = 0.0
+        if py < y_lo:
+            dy_out = y_lo - py
+        elif py > y_hi:
+            dy_out = py - y_hi
+        # нормализация по общим диапазонам
+        nx = dx_out / dx
+        ny = dy_out / dy
+        return np.hypot(nx, ny)
+
+    # Для каждого угла: получаем bbox в data coords и считаем минимальное расстояние
+    corner_scores = []
+    for fx, fy, ha, va in corners:
+        x_lo, x_hi, y_lo, y_hi = bbox_data_coords_for_text(fx, fy, ha, va)
+
+        # Минимальное расстояние от bbox до любой точки (в нормализованных единицах)
+        min_dist = float("inf")
+        for y in y_arrs:
+            # векторизированно вычислим расстояния для всех точек серии
+            px = x_arr
+            py = y
+            # расстояния к прямоугольнику для векторов
+            dxs = np.where(px < x_lo, x_lo - px, np.where(px > x_hi, px - x_hi, 0.0))
+            dys = np.where(py < y_lo, y_lo - py, np.where(py > y_hi, py - y_hi, 0.0))
+            dists = np.hypot(dxs / dx, dys / dy)
+            cur_min = float(np.min(dists))
+            if cur_min < min_dist:
+                min_dist = cur_min
+
+        corner_scores.append(((fx, fy, ha, va), min_dist))
+
+    # Выбираем угол с максимальным минимальным расстоянием (т.е. максимально удалённый)
+    best, best_dist = max(corner_scores, key=lambda t: t[1])
+
+    # Если все углы дают нулевое расстояние (крайний случай), всё равно выбираем лучший из них
+    fx, fy, ha, va = best
+
+    # Рисуем финальную подпись
+    ax.text(
+        fx, fy, bench_text,
+        transform=ax.transAxes,
+        ha=ha,
+        va=va,
+        multialignment="left",
+        fontsize=9,
+        linespacing=1.25,
+        bbox=dict(
+            facecolor="white",
+            edgecolor="0.8",
+            alpha=0.95,
+            boxstyle="round,pad=0.35"
+        ),
+        zorder=10
+    )
+
 
     fig.tight_layout()
 

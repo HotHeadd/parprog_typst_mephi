@@ -2,10 +2,10 @@
 #include <omp.h>
 
 int main() {
-    std::cout << "OpenMP version macro: " << __OPENMP << std::endl;
+    std::cout << "OpenMP version macro: " << _OPENMP << std::endl;
 
-    int year = __OPENMP / 100;
-    int month = __OPENMP % 100;
+    int year = _OPENMP / 100;
+    int month = _OPENMP % 100;
     std::cout << "OpenMP standard date: " << year << "-" << month << std::endl;
 
     std::cout << "Number of processors: " << omp_get_num_procs() << std::endl;

@@ -3,12 +3,15 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/opt/homebrew/opt/open-mpi/include"
             ],
-            "defines": [],
+            "defines": [
+                "OMPI_CXX=/opt/homebrew/opt/llvm/bin/clang++"
+            ],
             "compilerPath": "/opt/homebrew/opt/llvm/bin/clang++",
             "cStandard": "c17",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "macos-clang-arm64",
             "compilerArgs": [
                 "-I/opt/homebrew/opt/libomp/include",
